@@ -1,5 +1,69 @@
-Simple repo to test if it was possible to do the https://atmos.discower.io/pages/PX4/ setup contained into docker
+# Dockerized ATMOS Simulator
 
+A simple, containerized environment to test and run the [ATMOS PX4 SITL Setup](https://atmos.discower.io/pages/PX4/) without needing to install heavy dependencies directly on your host machine.
+
+This repository bundles ROS 2, Gazebo, PX4, and the necessary DDS bridge into a single, reproducible Docker environment. It also automatically launches QGroundControl alongside the simulation.
+
+---
+
+## 📦 What's Inside
+
+This Docker image is built on top of `Ubuntu Noble 24.04` and includes:
+* **ROS 2:** Jazzy Jalisco
+* **Simulator:** Gazebo Harmonic
+* **Flight Stack:** PX4-Autopilot (v1.17.0)
+* **Middleware:** Micro-XRCE-DDS-Agent (Compiled from source to bypass Docker `systemd`/Snap limitations)
+* **Ground Station:** QGroundControl (AppImage configured to run without FUSE dependencies)
+
+---
+
+## 🛠️ Prerequisites
+
+To run this simulation, your host machine must have:
+1. **Docker Engine** (or Docker Desktop)
+2. **Docker Compose**
+3. **Git**
+4. An active X11 server or display environment to render the Gazebo and QGroundControl GUIs (native on most Linux distributions; WSL 2 users should have WSLg enabled).
+
+> **Note for Windows/WSL 2 Users:** Compiling modern C++ (Fast-DDS/PX4) requires significant memory. It is highly recommended to increase your WSL memory limit in your `.wslconfig` file (e.g., `memory=16GB`) before building, otherwise the `docker build` step may hang.
+
+---
+
+## 🚀 Quick Start
+
+**1. Clone the repository**
+```bash
+git clone [https://github.com/YourUsername/docker-gz-sim.git](https://github.com/YourUsername/docker-gz-sim.git)
+```
+```bash
+cd docker-gz-sim
+```
+**2. Build the Docker Image**
+This will take some time upon the first run as it compiles PX4 and the DDS agent from source.
+```bash
 docker build .
+```
+**3. Launch the Simulation**
+Spin up both the PX4/Gazebo simulator and the Micro-XRCE-DDS Agent.
+```bash
+docker-compose up -d
+```
 
-docker-compose up
+📡 Accessing ROS 2 Topics
+
+Because the docker-compose.yml is configured to use network_mode: host, your Docker container shares the network with your host machine.
+
+If you have ROS 2 installed locally, you can view the live telemetry data from the simulated drone without even entering the container:
+```bash
+# On your local machine:
+source /opt/ros/jazzy/setup.bash
+ros2 topic list
+ros2 topic echo /fmu/out/vehicle_attitude
+```
+
+🛑 Shutting Down
+
+To cleanly stop the simulation, stop the DDS bridge, and tear down the containers:
+```bash
+docker-compose down
+```
