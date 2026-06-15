@@ -21,7 +21,7 @@ services:
       source /opt/ros/jazzy/setup.bash &&
       source /px4_ws/install/setup.bash &&
       cd /PX4-Autopilot &&
-      make px4_sitl_spacecraft gz_atmos
+      make px4_sitl_spacecraft gz_atmos_kthspacelab
       "
 
   # 2. The Micro-XRCE-DDS Bridge
