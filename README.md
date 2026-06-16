@@ -49,6 +49,9 @@ git clone [https://github.com/YourUsername/docker-gz-sim.git](https://github.com
 ```bash
 cd docker-gz-sim
 ```
+```bash
+xhost +local:
+```
 **2. Launch the Simulation**
 Spin up both the PX4/Gazebo simulator and the Micro-XRCE-DDS Agent.
 ```bash
