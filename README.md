@@ -87,3 +87,14 @@ To cleanly stop the simulation, stop the DDS bridge, and tear down the container
 ```bash
 docker compose down
 ```
+
+
+To interact with ROS 2 and view the topics, you must enter the container:
+
+**1. Enter the container's bash environment**
+
+docker exec -it atmos_sim bash
+
+**2. Run the ROS 2 check (inside the container):**
+
+ros2 topic list

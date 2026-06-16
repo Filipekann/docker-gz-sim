@@ -10,6 +10,7 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
+      - FASTDDS_BUILTIN_TRANSPORTS=UDPv4
     volumes:
       # Mounts the X11 socket for Gazebo GUI
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -20,8 +21,9 @@ services:
       useradd -m qgcuser || true &&
       sudo -E -u qgcuser /qgc/QGroundControl-x86_64.AppImage --appimage-extract-and-run &
       MicroXRCEAgent udp4 -p 8888 &
+      (while ! /PX4-Autopilot/build/px4_sitl_spacecraft/bin/px4-param set UXRCE_DDS_AG_IP 2130706433 2>/dev/null; do sleep 1; done && /PX4-Autopilot/build/px4_sitl_spacecraft/bin/px4-uxrce_dds_client stop && /PX4-Autopilot/build/px4_sitl_spacecraft/bin/px4-uxrce_dds_client start -t udp -p 8888) &
       source /opt/ros/jazzy/setup.bash &&
       source /px4_ws/install/setup.bash &&
       cd /PX4-Autopilot &&
-      make px4_sitl_spacecraft gz_atmos
+      make px4_sitl_spacecraft gz_atmos_kthspacelab
       "
