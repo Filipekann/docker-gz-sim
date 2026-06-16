@@ -19,19 +19,9 @@ services:
       /bin/bash -c "
       useradd -m qgcuser || true &&
       sudo -E -u qgcuser /qgc/QGroundControl-x86_64.AppImage --appimage-extract-and-run &
+      MicroXRCEAgent udp4 -p 8888 &
       source /opt/ros/jazzy/setup.bash &&
       source /px4_ws/install/setup.bash &&
       cd /PX4-Autopilot &&
       make px4_sitl_spacecraft gz_atmos
-      "
-
-  # 2. The Micro-XRCE-DDS Bridge
-  dds-agent:
-    # build: .
-    image: filipekann/docker-gz-sim-dds-agent:1.0
-    container_name: atmos_dds_agent
-    network_mode: host
-    command: >
-      /bin/bash -c "
-      MicroXRCEAgent udp4 -p 8888
       "
