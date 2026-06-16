@@ -1,7 +1,8 @@
 services:
   # 1. The PX4 & Gazebo Simulation
   px4-sim:
-    build: .
+    # build: .
+    image: filipekann/docker-gz-sim-dds-agent:1.0
     container_name: atmos_sim
     network_mode: host
     ipc: host
@@ -26,7 +27,8 @@ services:
 
   # 2. The Micro-XRCE-DDS Bridge
   dds-agent:
-    build: .
+    # build: .
+    image: filipekann/docker-gz-sim-dds-agent:1.0
     container_name: atmos_dds_agent
     network_mode: host
     command: >
