@@ -2,13 +2,14 @@
 # The goal of this dockerfile is to create the base image for development for the ATMOS simulator.
 # https://atmos.discower.io/
 # This image is using a simulated px4 and not a real pixhawk running px4. 
-# The packages needed for development: ROS 2 Humble Hawksbill, Gazebo Harmonic, PX4-Autopilot, Micro XRCE-DDS
+# The packages needed for development: ROS 2 Jazzy Jalisco, Gazebo Harmonic, PX4-Autopilot, Micro XRCE-DDS
 
-# Base image of Ubuntu Jammy 22.04, ROS 2 Humble Hawksbill and Gazebo Harmonic
-FROM osrf/ros:humble-desktop-full
+# Base image of Ubuntu Noble 24.04, ROS 2 Jazzy Jalisco and Gazebo Harmonic
+FROM osrf/ros:jazzy-desktop-full
 
 # Prevent interactive prompts during package installations
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # Install core tools (added wget for QGroundControl)
 RUN apt-get update && apt-get install -y \
@@ -29,8 +30,8 @@ WORKDIR /px4_ws/src
 RUN git clone --depth 1 -b v1.17.0 https://github.com/PX4/px4_msgs.git
 
 WORKDIR /px4_ws
-# FIXED: Sourced the Humble setup and ran colcon build in the same bash session
-RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build"
+# Sourced the Jazzy setup and ran colcon build in the same bash session
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && colcon build"
 
 # 4. Configure PX4 topics for ROS 2
 COPY dds_topics.yaml /PX4-Autopilot/src/modules/uxrce_dds_client/dds_topics.yaml
@@ -73,7 +74,7 @@ RUN cmake .. && \
 ###
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl ca-certificates \
-    build-essential cmake ament-cmake pkg-config gfortran \
+    build-essential cmake pkg-config gfortran \
     python3-pip python3-dev \
     python3-colcon-common-extensions \
     python3-rosdep \
@@ -101,8 +102,8 @@ RUN make -j"$(nproc)" && make install
 
 # Python deps + acados_template
 WORKDIR /acados
-# Pin combos here if needed; default usually fine on Humble
-RUN pip3 install --no-cache-dir "numpy==1.21.0" scipy jinja2 casadi \
+# Pin combos here if needed; default usually fine on Jazzy
+RUN pip3 install --no-cache-dir "numpy<2" scipy jinja2 casadi\
  && pip3 install -e interfaces/acados_template
 
 # Build tera renderer and place it on PATH
@@ -134,18 +135,20 @@ WORKDIR /ros2_ws
 RUN rosdep init 2>/dev/null || true \
  && rosdep update \
  && rosdep install --from-paths src --ignore-src -r -y
-RUN bash -c "source /opt/ros/humble/setup.bash && colcon build --packages-up-to px4_mpc"
+RUN bash -c "source /opt/ros/jazzy/setup.bash && colcon build --packages-up-to px4_mpc"
 
 # 8. Final Environment Setup
 ARG USERNAME=developer
 ARG UID=1000
 ARG GID=1000
 
-RUN groupadd -g $GID $USERNAME && \
+RUN userdel -r ubuntu 2>/dev/null; \
+    groupdel ubuntu 2>/dev/null; \
+    groupadd -g $GID $USERNAME && \
     useradd -m -u $UID -g $GID -G sudo,dialout $USERNAME && \
     echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-RUN echo "source /opt/ros/humble/setup.bash" >> /home/$USERNAME/.bashrc && \
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "source /px4_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "source /ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc
 
