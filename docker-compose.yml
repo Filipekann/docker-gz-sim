@@ -20,8 +20,7 @@ services:
       - DISPLAY=${DISPLAY:-:0}
       - XAUTHORITY=/home/developer/.Xauthority
       - QT_X11_NO_MITSHM=1
-      - HEADLESS=${HEADLESS:-0}
-      - NS=quadrotor
+      - PX4_UXRCE_DDS_NS=atmos
     volumes:
       # Mounts the X11 socket for Gazebo GUI
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -33,5 +32,7 @@ services:
       - |
         MicroXRCEAgent udp4 -p 8888 > /workspace/MicroXRCEAgent_logs.txt 2>&1 &
         /qgc/QGroundControl-x86_64.AppImage --appimage-extract-and-run > /workspace/QGC_logs.txt 2>&1 &
-        ros2 launch px4_mpc mpc_spacecraft_launch.py > /workspace/mpc_logs.txt 2>&1 &
-        cd /PX4-Autopilot && HEADLESS=$HEADLESS make px4_sitl_spacecraft gz_atmos
+        ros2 launch px4_mpc mpc_spacecraft_launch.py namespace:=$$PX4_UXRCE_DDS_NS > /workspace/mpc_logs.txt 2>&1 &
+        rm -rf /workspace/rosbags
+        nohup ros2 bag record -o /workspace/rosbags -e "/$$PX4_UXRCE_DDS_NS/.*" > /workspace/rosbag_logs.txt 2>&1 &
+        cd /PX4-Autopilot && make px4_sitl_spacecraft gz_atmos_kthspacelab
